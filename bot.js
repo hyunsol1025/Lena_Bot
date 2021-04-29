@@ -44,12 +44,18 @@ client.on('message', message => {
                     .setDescription(saypl[annom[ran]] + '님이 가르쳐 주셨어요!')
                     .setColor('0xEDD903')
                 message.channel.send(ansur[annom[ran]] + "\n```\'" + saypl[annom[ran]] + '\'님이 가르쳐 주셨어요!```');
-            } else if (saypl[ran] == "adminD") {
-                //await asyncio.sleep(1.0)
-                //await dco.edit(content='***넹?***')
             }
-            else
+             else if (saypl[annom[ran]] == "adminD") {
+                message.channel.send(ansur[annom[ran]]).then((msg) => {
+                    //setTimeout(msg.edit('***넹?***'), 100);
+                    setTimeout(function () {
+                        msg.edit('***넹?***');
+                    }, 1000);
+                });
+            }
+            else {
                 message.channel.send(ansur[annom[ran]]);
+            }
 
             psay = -1;
         }
