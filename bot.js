@@ -1,4 +1,4 @@
-require("./-Dev/env.js");
+require("-Dev");
 
 const Discord = require('discord.js');
 const client = new Discord.Client();
