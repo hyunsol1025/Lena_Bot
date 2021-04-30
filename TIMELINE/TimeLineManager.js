@@ -28,7 +28,7 @@ var TIMELINE = {
 /////////////////////////
 
 function getSubjectByTime(dayIndex, h, m) {
-    console.log("----")
+    console.log("-----")
     var _loop_index = 0;
     var RESULT = null;
 
