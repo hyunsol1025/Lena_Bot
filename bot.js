@@ -64,5 +64,6 @@ client.on('message', message => {
         }
         annom = [];
         ansur = [];
+        psay = -1;
     }
 })
