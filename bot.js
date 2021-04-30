@@ -21,6 +21,7 @@ ansur = [];
 saymst = [];
 annom = [];
 psay = -1;
+namep = "";
 
 f = fs.readFileSync("./lists/say.txt", "utf-8");
 saymst = f.split("\n");
@@ -46,6 +47,8 @@ client.on('ready', () => {
 });
 
 client.on('message', message => {
+    namep = message.author.username;
+    //console.log(namep);
 
     // 대화관련
     for (var i = 0; i < saymst.length; i++) {
@@ -92,6 +95,13 @@ client.on('message', message => {
         annom = [];
         ansur = [];
         psay = -1;
+    }
+    //console.log(message.content.substr(7, message.content.length) + ";" + namep);
+    if(message.content.startsWith(frn + "배워 "))
+    {
+        saymst.push(message.content.substr(7, message.content.length) + ";" + namep);
+        f = message.content.substr(7, message.content.length).split(";");
+        message.channel.send("\'" + f[0] + "\'은(는) " + "\'" + f[1] + "\'" + "이군요?  알겠어요 " + "\'" + namep + "\'" + "님!");
     }
 
     // 시간표 관련

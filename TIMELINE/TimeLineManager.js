@@ -28,7 +28,7 @@ var TIMELINE = {
 /////////////////////////
 
 function getSubjectByTime(dayIndex, h, m) {
-    console.log("----")
+    //console.log("----")
     var _loop_index = 0;
 
     TIMELINE_TIMETABLE.forEach(ele => {
@@ -42,7 +42,7 @@ function getSubjectByTime(dayIndex, h, m) {
             _d2.setHours(h); _d2.setMinutes(m);
             _d2.setMinutes(_d2.getMinutes()+leftMin);
 
-            console.log("["+leftMin+"분 후] "+_d2.getHours()+"시 "+_d2.getMinutes()+"분 <-> "+ele);
+            //console.log("["+leftMin+"분 후] "+_d2.getHours()+"시 "+_d2.getMinutes()+"분 <-> "+ele);
 
             if(_d2.getMinutes() == _d.getMinutes() && _d2.getMinutes() == _d.getMinutes()) {
                 if(ele.includes("@lunch")) {
@@ -97,7 +97,7 @@ module.exports = {
         if(subject != null) {
             console.log("다음수업("+subject.split("@")[1]+") 까지 "+subject.split("@")[0]+"분 남음!");
         } else {
-            console.log("과목 정보가 없음!");
+            //console.log("과목 정보가 없음!");
         }
     },
 
