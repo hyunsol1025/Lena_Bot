@@ -52,7 +52,6 @@ client.on('message', message => {
 
     // 대화관련
     for (var i = 0; i < saymst.length; i++) {
-        ansur = [];
         f = saymst[i];
         ansur = f.split(";");
         if (message.content == frn + ansur[0]) {
@@ -64,7 +63,6 @@ client.on('message', message => {
     if (i == saymst.length) {
         if (psay >= 0) {
             ran = func.rand(0, annom.length - 1);
-            ansur = [];
             f = saymst[annom[ran]];
             ansur = f.split(";");
             if (ansur[2] !== "admin" && ansur[2] !== "adminD") {
@@ -93,7 +91,6 @@ client.on('message', message => {
             }
         }
         annom = [];
-        ansur = [];
         psay = -1;
     }
     //console.log(message.content.substr(7, message.content.length) + ";" + namep);
@@ -104,6 +101,30 @@ client.on('message', message => {
         message.channel.send("\'" + f[0] + "\'은(는) " + "\'" + f[1] + "\'" + "이군요?  알겠어요 " + "\'" + namep + "\'" + "님!");
         fs.writeFileSync("./lists/say.txt",saymst.join('\n') , "utf-8");
         //가르치기 파일 세이브
+    }
+
+    if(message.content.startsWith(frn + "잊어 "))
+    {
+        for (var i = 0; i < saymst.length; i++) {
+            f = saymst[i];
+            ansur = f.split(";");
+            if((ansur[2] != "admin") && (ansur[2] != "adminD") && (namep == ansur[2]) && (message.content.substr(7, message.content.length) == ansur[0]))
+            {
+                annom.push(i);
+            }
+        }
+        if(annom.length != 0) {
+            f = saymst[annom[annom.length - 1]];
+            ansur = f.split(";");
+            f = saymst.splice(annom[annom.length - 1], annom[annom.length - 1]);
+            message.channel.send("\'" + ansur[0] + "\'" + "... 그게 뭐더라?");
+            fs.writeFileSync("./lists/say.txt", saymst.join('\n'), "utf-8");
+        }
+        else
+        {
+            message.channel.send("자신이 가르친 단어만 잊게 할 수 있어요!");
+        }
+        annom = [];
     }
 
     // 시간표 관련
