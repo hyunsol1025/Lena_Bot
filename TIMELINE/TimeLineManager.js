@@ -3,7 +3,7 @@
 
 require("../-Dev/env.js");
 var func = require("../Functions.js");
-var v = require("../Variables");
+var v = require("../Variables.js");
 
 /////////////////////////
 
@@ -30,36 +30,46 @@ var TIMELINE = {
 function getSubjectByTime(dayIndex, h, m) {
     console.log("----")
     var _loop_index = 0;
+    var RESULT = null;
 
-    TIMELINE_TIMETABLE.forEach(ele => {
-        var str = ele.split("@")[0];
-        var _d = func.getKTC();
-        _d.setHours( parseInt(str.split(":")[0]) ); _d.setMinutes( parseInt(str.split(":")[1]) );
+    for(var i = 0; i < TIMELINE_TIMETABLE.length; i++) {
+        var ele = TIMELINE_TIMETABLE[i];
+        var totalEle = ele.split("@")[0];
 
-        TIMELINE_TIMENOTI_lEFTTIME.forEach(leftMin => {
+        for (var j = 0; j < TIMELINE_TIMENOTI_lEFTTIME.length; j++) {
             var _d2 = func.getKTC();
+            var leftMin = TIMELINE_TIMENOTI_lEFTTIME[j];
 
-            _d2.setHours(h); _d2.setMinutes(m);
-            _d2.setMinutes(_d2.getMinutes()+leftMin);
+            _d2.setHours(h);
+            _d2.setMinutes(m);
+            _d2.setMinutes(_d2.getMinutes() + leftMin);
 
-            console.log("["+leftMin+"분 후] "+_d2.getHours()+"시 "+_d2.getMinutes()+"분 <-> "+ele);
+            // console.log("["+leftMin+"분 후] "+_d2.getHours()+"시 "+_d2.getMinutes()+"분 <-> "+ele);
+            // console.log((_d2.getHours()+":"+_d2.getMinutes())+" == "+totalEle);
 
-            if(_d2.getMinutes() == _d.getMinutes() && _d2.getMinutes() == _d.getMinutes()) {
-                if(ele.includes("@lunch")) {
-                    return leftMin+"@lunch";
-                }
-                else if(ele.includes("@finish")) {
-                    return leftMin+"@finish";
+            if ((_d2.getHours() + ":" + _d2.getMinutes()) == totalEle) {
+
+                if (ele.includes("@lunch")) {
+
+                    return leftMin + "@lunch";
+
+                } else if (ele.includes("@finish")) {
+
+                    return leftMin + "@finish";
+
                 } else {
-                    return leftMin+"@"+v.todayTimeline[_loop_index];
+                    console.log("i: "+i);
+                    return leftMin + "@" + v.todayTimeline[i];
                 }
+
             }
-        });
 
-        _loop_index++;
-    });
+        }
 
-    return null;
+    }
+
+    console.log("RESULT: "+RESULT);
+    return RESULT;
 }
 
 module.exports = {
@@ -85,16 +95,20 @@ module.exports = {
                 v.todayTimeline = TIMELINE.d5;
                 break;
         }
+
+        console.log("todayTimeLine 설정 : "+v.todayTimeline);
     },
 
     _TIMELINE_LOOP_PROCESS: function _TIMELINE_PROCESS() {
         var d = func.getKTC();
 
-        if(d.getDay() == 0 || d.getDay() == 6) return;
+        if((d.getDay() == 0 || d.getDay() == 6) || _ANTI_NOTI == d.getHours()+":"+d.getMinutes()) return;
 
         var subject = getSubjectByTime(d.getDay(), d.getHours(), d.getMinutes());
 
         if(subject != null) {
+            _ANTI_NOTI = d.getHours()+":"+d.getMinutes();
+
             console.log("다음수업("+subject.split("@")[1]+") 까지 "+subject.split("@")[0]+"분 남음!");
         } else {
             console.log("과목 정보가 없음!");
@@ -145,7 +159,10 @@ module.exports = {
         var debugMode = true;
 
         if(debugMode) {
-            var debugTime = "10:42";
+            var ddd = func.getKTC();
+
+            var debugTime = "23:"+(ddd.getMinutes()+0);
+            console.log(debugTime);
             var _loop_index = 0;
             TIMELINE_TIMETABLE.forEach(ele => {
 
@@ -158,7 +175,6 @@ module.exports = {
                 _loop_index++;
             });
         }
-
 
         // 최종 TIMETABLE 배열 결과 출력
         var _class = 1;
@@ -175,7 +191,6 @@ module.exports = {
                 console.log(_class++ +"교시 | "+ele);
             }
         });
-
         console.log("##########################");
     }
 }
