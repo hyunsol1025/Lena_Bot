@@ -1,3 +1,4 @@
 module.exports = {
-    isNotHosting: false
+    isNotHosting: false,
+    todayTimeline: []
 }

@@ -30,12 +30,13 @@ const timeline_noti_channel = client.channels.cache.get(process.env.timelineNoti
 var d = func.getKTC();
 
 timelineManager._TIMELINE_TIMETABLE_SET(d.getDay(), 7, 45, 4);
+timelineManager._SET_TODAYTIMETABLE(d.getDay());
 
 function _callTimeLineProcess() { timelineManager._TIMELINE_LOOP_PROCESS(); }
 
 setInterval(_callTimeLineProcess, 2000);
 
-//////////////////////////////////////////////////// - 이벤트들
+////////////////////////////////////////////////////
 
 client.on('ready', () => {
     console.log("레나봇 온라인!");

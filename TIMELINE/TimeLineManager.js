@@ -3,8 +3,12 @@
 
 require("../-Dev/env.js");
 var func = require("../Functions.js");
+var v = require("../Variables");
+
+/////////////////////////
 
 var TIMELINE_TIMENOTI_lEFTTIME = [ 0, 5, 10 ]; // 다음 수업을 알릴때, 해당 알림을 한 시점이 수업으로 부터 몇분 전 시각에 알림하는 가
+
 var _ANTI_NOTI = ""; // 알림 도배 방지
 
 var TIMELINE_TIMETABLE = [];
@@ -21,31 +25,11 @@ var TIMELINE = {
     d5: ["free","english","pro","math","other","other"]
 };
 
+/////////////////////////
+
 function getSubjectByTime(dayIndex, h, m) {
-    var _todayTimeline = [];
+    console.log("----")
     var _loop_index = 0;
-
-    switch (dayIndex) {
-        case 1:
-            _todayTimeline = TIMELINE.d1;
-            break;
-
-        case 2:
-            _todayTimeline = TIMELINE.d2;
-            break;
-
-        case 3:
-            _todayTimeline = TIMELINE.d3;
-            break;
-
-        case 4:
-            _todayTimeline = TIMELINE.d4;
-            break;
-
-        case 5:
-            _todayTimeline = TIMELINE.d5;
-            break;
-    }
 
     TIMELINE_TIMETABLE.forEach(ele => {
         var str = ele.split("@")[0];
@@ -54,34 +38,67 @@ function getSubjectByTime(dayIndex, h, m) {
 
         TIMELINE_TIMENOTI_lEFTTIME.forEach(leftMin => {
             var _d2 = func.getKTC();
-            _d2.setHours(h); _d2.setMinutes(m);
 
+            _d2.setHours(h); _d2.setMinutes(m);
             _d2.setMinutes(_d2.getMinutes()+leftMin);
+
+            console.log("["+leftMin+"분 후] "+_d2.getHours()+"시 "+_d2.getMinutes()+"분 <-> "+ele);
 
             if(_d2.getMinutes() == _d.getMinutes() && _d2.getMinutes() == _d.getMinutes()) {
                 if(ele.includes("@lunch")) {
-                    return "lunch";
+                    return leftMin+"@lunch";
                 }
                 else if(ele.includes("@finish")) {
-                    return "finish";
+                    return leftMin+"@finish";
                 } else {
-                    return _todayTimeline[_loop_index];
+                    return leftMin+"@"+v.todayTimeline[_loop_index];
                 }
             }
         });
 
         _loop_index++;
     });
+
+    return null;
 }
 
 module.exports = {
+    _SET_TODAYTIMETABLE: function(dayIndex) {
+        switch (dayIndex) {
+            case 1:
+                v.todayTimeline = TIMELINE.d1;
+                break;
+
+            case 2:
+                v.todayTimeline = TIMELINE.d2;
+                break;
+
+            case 3:
+                v.todayTimeline = TIMELINE.d3;
+                break;
+
+            case 4:
+                v.todayTimeline = TIMELINE.d4;
+                break;
+
+            case 5:
+                v.todayTimeline = TIMELINE.d5;
+                break;
+        }
+    },
 
     _TIMELINE_LOOP_PROCESS: function _TIMELINE_PROCESS() {
         var d = func.getKTC();
 
         if(d.getDay() == 0 || d.getDay() == 6) return;
 
-        getSubjectByTime(d);
+        var subject = getSubjectByTime(d.getDay(), d.getHours(), d.getMinutes());
+
+        if(subject != null) {
+            console.log("다음수업("+subject.split("@")[1]+") 까지 "+subject.split("@")[0]+"분 남음!");
+        } else {
+            console.log("과목 정보가 없음!");
+        }
     },
 
     // 시간표의 시간 목록을 설정하는 메소드
@@ -123,6 +140,27 @@ module.exports = {
         d.setMinutes(d.getMinutes() + 45);
         TIMELINE_TIMETABLE.push(d.getHours()+":"+d.getMinutes()+"@finish");
 
+
+        // 디버깅 전용
+        var debugMode = true;
+
+        if(debugMode) {
+            var debugTime = "10:42";
+            var _loop_index = 0;
+            TIMELINE_TIMETABLE.forEach(ele => {
+
+                if(ele.includes("@")) {
+                    TIMELINE_TIMETABLE[_loop_index] = debugTime+"@"+ele.split("@")[1];
+                } else {
+                    TIMELINE_TIMETABLE[_loop_index] = debugTime;
+                }
+
+                _loop_index++;
+            });
+        }
+
+
+        // 최종 TIMETABLE 배열 결과 출력
         var _class = 1;
 
         TIMELINE_TIMETABLE.forEach(ele => {
