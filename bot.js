@@ -26,18 +26,21 @@ f = fs.readFileSync("./lists/say.txt", "utf-8");
 saymst = f.split("\n");
 
 //////////////////////////////////////////////////// - 시간표 기능 관련
-const timeline_noti_channel = client.channels.cache.get();
+const timeline_noti_channel = client.channels.cache.get(process.env.timelineNotiChannel);
 var d = func.getKTC();
 
 timelineManager._TIMELINE_TIMETABLE_SET(d.getDay(), 7, 45, 4);
-setInterval(timelineManager._TIMELINE_LOOP_PROCESS(), 2000);
+
+function _callTimeLineProcess() { timelineManager._TIMELINE_LOOP_PROCESS(); }
+
+setInterval(_callTimeLineProcess, 2000);
 
 //////////////////////////////////////////////////// - 이벤트들
 
 client.on('ready', () => {
     console.log("레나봇 온라인!");
 
-    // 봇이 점검중임을 표시
+    // 봇을 호스팅 서비스로 호스트하지 않을때 점검중임을 표시
     if(v.isNotHosting) client.user.setActivity("점검!",{ type: 'PLAYING'});
 });
 
