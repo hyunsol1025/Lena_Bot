@@ -1,8 +1,15 @@
 require("./-Dev/env.js");
 
+const func = require("./Functions.js");
+const timelineManager = require("./TIMELINE/TimeLineManager.js");
+
 const Discord = require('discord.js');
 const client = new Discord.Client();
 const fs = require('fs');
+
+var d = func.getKTC();
+
+timelineManager._TIMELINE_TIMETABLE_SET(d.getDay(), 7, 45, 4);
 
 frn = "레블아 ";
 ansur = [];
@@ -13,11 +20,10 @@ psay = -1;
 f = fs.readFileSync("./lists/say.txt", "utf-8");
 saymst = f.split("\n");
 
-function rand(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+client.on('ready', () => {
+    console.log("레나봇 온라인!");
+});
 
-client.login(process.env.TOKEN);
 
 client.on('message', message => {
 
@@ -33,7 +39,7 @@ client.on('message', message => {
 
     if (i == saymst.length) {
         if (psay >= 0) {
-            ran = rand(0, annom.length - 1);
+            ran = func.rand(0, annom.length - 1);
             ansur = [];
             f = saymst[annom[ran]];
             ansur = f.split(";");
@@ -66,4 +72,6 @@ client.on('message', message => {
         ansur = [];
         psay = -1;
     }
-})
+});
+
+client.login(process.env.TOKEN);
