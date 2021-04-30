@@ -103,6 +103,7 @@ client.on('message', message => {
         f = message.content.substr(7, message.content.length).split(";");
         message.channel.send("\'" + f[0] + "\'은(는) " + "\'" + f[1] + "\'" + "이군요?  알겠어요 " + "\'" + namep + "\'" + "님!");
         fs.writeFileSync("./lists/say.txt",saymst.join('\n') , "utf-8");
+        //가르치기 파일 세이브
     }
 
     // 시간표 관련
