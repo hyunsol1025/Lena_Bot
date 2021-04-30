@@ -1,5 +1,13 @@
 require("./-Dev/env.js");
 
+const os = require("os");
+const v = require("./Variables.js");
+
+// 봇을 호스트하는 컴퓨터가 호스팅 서비스가 아님을 인식 -> 봇이 점검중이거나 개발중임
+if(os.hostname().length < 20) {
+    v.isNotHosting = true;
+}
+
 const func = require("./Functions.js");
 const timelineManager = require("./TIMELINE/TimeLineManager.js");
 
@@ -7,10 +15,7 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 const fs = require('fs');
 
-var d = func.getKTC();
-
-timelineManager._TIMELINE_TIMETABLE_SET(d.getDay(), 7, 45, 4);
-
+//////////////////////////////////////////////////// - 대화 기능 관련
 frn = "레블아 ";
 ansur = [];
 saymst = [];
@@ -20,13 +25,25 @@ psay = -1;
 f = fs.readFileSync("./lists/say.txt", "utf-8");
 saymst = f.split("\n");
 
+//////////////////////////////////////////////////// - 시간표 기능 관련
+const timeline_noti_channel = client.channels.cache.get();
+var d = func.getKTC();
+
+timelineManager._TIMELINE_TIMETABLE_SET(d.getDay(), 7, 45, 4);
+setInterval(timelineManager._TIMELINE_LOOP_PROCESS(), 2000);
+
+//////////////////////////////////////////////////// - 이벤트들
+
 client.on('ready', () => {
     console.log("레나봇 온라인!");
-});
 
+    // 봇이 점검중임을 표시
+    if(v.isNotHosting) client.user.setActivity("점검!",{ type: 'PLAYING'});
+});
 
 client.on('message', message => {
 
+    // 대화관련
     for (var i = 0; i < saymst.length; i++) {
         ansur = [];
         f = saymst[i];
@@ -72,6 +89,9 @@ client.on('message', message => {
         ansur = [];
         psay = -1;
     }
+
+    // 시간표 관련
+
 });
 
 client.login(process.env.TOKEN);

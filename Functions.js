@@ -1,4 +1,7 @@
+const Discord = require('discord.js');
+
 module.exports = {
+
     // 한국시간 변수를 반환하는 메소드
     getKTC: function getKTC() {
         const curr = new Date();

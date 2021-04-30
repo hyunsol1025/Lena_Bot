@@ -18,7 +18,7 @@ var TIMELINE = {
 };
 
 module.exports = {
-    _TIMELINE_PROCESS: function _TIMELINE_PROCESS() {
+    _TIMELINE_LOOP_PROCESS: function _TIMELINE_PROCESS() {
 
     },
 
