@@ -8,17 +8,10 @@ frn = "레블아 ";
 ansur = [];
 saymst = [];
 annom = [];
-saypl = [];
 psay = -1;
 
 f = fs.readFileSync("./lists/say.txt", "utf-8");
 saymst = f.split("\n");
-
-f = fs.readFileSync("./lists/saylist.txt", "utf-8");
-ansur = f.split("\n");
-
-f = fs.readFileSync("./lists/sayp.txt", "utf-8");
-saypl = f.split("\n");
 
 function rand(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -29,32 +22,37 @@ client.login(process.env.TOKEN);
 client.on('message', message => {
 
     for (var i = 0; i < saymst.length; i++) {
-        if (message.content == (frn + saymst[i])) {
+        ansur = [];
+        f = saymst[i];
+        ansur = f.split(";");
+        if (message.content == frn + ansur[0]) {
             annom.push(i);
-            psay = message.content.startsWith(saymst[i]);
+            psay = message.content.startsWith(ansur[0]);
         }
     }
 
     if (i == saymst.length) {
         if (psay >= 0) {
             ran = rand(0, annom.length - 1);
-            if (saypl[annom[ran]] !== "admin" && saypl[annom[ran]] !== "adminD") {
+            ansur = [];
+            f = saymst[annom[ran]];
+            ansur = f.split(";");
+            if (ansur[2] !== "admin" && ansur[2] !== "adminD") {
                 const embed = new Discord.MessageEmbed()
                     .setTitle('')
-                    .setDescription(saypl[annom[ran]] + '님이 가르쳐 주셨어요!')
+                    .setDescription(ansur[2] + '님이 가르쳐 주셨어요!')
                     .setColor('0xEDD903')
-                message.channel.send(ansur[annom[ran]] + "\n```\'" + saypl[annom[ran]] + '\'님이 가르쳐 주셨어요!```');
+                message.channel.send(ansur[1] + "\n```\'" + ansur[2] + '\'님이 가르쳐 주셨어요!```');
             }
-             else if (saypl[annom[ran]] == "adminD") {
-                message.channel.send(ansur[annom[ran]]).then((msg) => {
-                    //setTimeout(msg.edit('***넹?***'), 100);
+            else if (ansur[2] == "adminD") {
+                message.channel.send(ansur[1]).then((msg) => {
                     setTimeout(function () {
                         msg.edit('***넹?***');
                     }, 1000);
                 });
             }
             else {
-                message.channel.send(ansur[annom[ran]]);
+                message.channel.send(ansur[1]);
             }
 
             psay = -1;
@@ -65,5 +63,6 @@ client.on('message', message => {
             }
         }
         annom = [];
+        ansur = [];
     }
 })
