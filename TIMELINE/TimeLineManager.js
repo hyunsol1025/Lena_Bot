@@ -33,6 +33,8 @@ var TIMELINE = {
 function getSubjectByTime(dayIndex, h, m) {
     console.log("-----");
 
+    var passLunch = false;
+
     for(var i = 0; i < TIMELINE_TIMETABLE.length; i++) {
         var ele = TIMELINE_TIMETABLE[i];
         var totalEle = ele.split("@")[0];
@@ -50,23 +52,26 @@ function getSubjectByTime(dayIndex, h, m) {
             // console.log((_d2.getHours()+":"+_d2.getMinutes())+" == "+totalEle);
 
             if ((_d2.getHours() + ":" + _d2.getMinutes()) == totalEle) {
-
+                console.log("진입! ele: "+ele);
+                console.log("i: "+i);
                 if (ele.includes("@lunch")) {
 
                     return leftMin + "@lunch";
 
                 } else if (ele.includes("@finish")) {
 
+                    console.log("IM HERE!");
                     return leftMin + "@finish";
 
                 } else {
-                    return leftMin + "@" + v.todayTimeline[i];
+                    return leftMin + "@" + v.todayTimeline[i+(passLunch ? -1 : 0)];
                 }
 
             }
 
         }
 
+        if(ele.includes("@lunch")) passLunch = true;
     }
 
     return false;
@@ -100,36 +105,77 @@ function TIMELINE_NOTI(subject, leftMin) {
     var _des_leftTime = "";
     var _des = "추가정보가 없음.";
 
-    // 추가 정보 설정
-    if(subject === "pro") {
-        _des = "**[여기를 클릭]("+getClassURL("pro2")+")**하여 뒷 번호 프로그래밍에 참가할 수 있음.\n"
-    }
-
-    else if(subject == "music") {
-        _des = "**[여기를 클릭]("+getClassURL("music_ebs")+")**하여 음악 EBS에 접속할 수 있음.\n"
-    }
-
     // 남은시간 설정
-    _des_leftTime += (leftMin == 0 ? "지금 수업이 시작됨!" : "수업까지 앞으로 **"+leftMin+"분 남음!**");
+    _des_leftTime += (leftMin == 0 ? "**지금 수업이 시작됨.**" : "수업까지 앞으로 **"+leftMin+"분 남음!**");
 
     // 로그
     console.log("\tclassLink -> "+classLink);
 
-    // 수업 이름 한글화
-    const embed = new v.Discord.MessageEmbed()
-        .setTitle(_title)
-        .setColor("#f5b042")
-        .setURL(classLink)
-        .setDescription("\n\u200b")
-        .setThumbnail(wataten.getRandomWataten())
-        .addField("💬 | 추가정보",_des)
-        .addField("⏱ | 남은시간",_des_leftTime);
+    // embed 메세지 설정
+    var embed;
+
+    if(subject === "lunch") {
+
+        // 점심시간
+        if(leftMin == 0) {
+
+            embed = new v.Discord.MessageEmbed()
+                .setTitle("점심시간!")
+                .setImage("https://i.pinimg.com/564x/08/27/58/08275812408762e28ab8d479723ce210.jpg");
+
+        } else {
+
+            embed = new v.Discord.MessageEmbed()
+                .setTitle(leftMin+"분 후 점심시간");
+
+        }
+    }
+
+    else if(subject === "finish") {
+        
+        // 종례
+        if(leftMin == 0) {
+
+            embed = new v.Discord.MessageEmbed()
+                .setTitle("종례!")
+                .setImage("https://i.pinimg.com/564x/a1/ab/d1/a1abd1c5c07792caee76e3d313723b71.jpg");
+
+        } else {
+
+            embed = new v.Discord.MessageEmbed()
+                .setTitle(leftMin+"분 후 종례");
+
+        }
+
+    }
+    else if(subject === "pro" || subject === "music") {
+        var _str = (subject === "pro" ? "**[여기를 클릭]("+getClassURL("pro2")+")**하여 뒷 번호 프로그래밍에 참가할 수 있음.\n" :
+            "**[여기를 클릭]("+getClassURL("music_ebs")+")**하여 음악 EBS에 접속할 수 있음.\n" );
+
+        embed = new v.Discord.MessageEmbed()
+            .setTitle(_title)
+            .setColor("#f5b042")
+            .setURL(classLink)
+            .setThumbnail(wataten.getRandomWataten())
+            .setDescription(_str+_des_leftTime)
+    }
+    else {
+
+        embed = new v.Discord.MessageEmbed()
+            .setTitle(_title)
+            .setColor("#f5b042")
+            .setURL(classLink)
+            .setThumbnail(wataten.getRandomWataten())
+            .setDescription(_des_leftTime);
+
         //.setFooter(_des_leftTime,"https://i.postimg.cc/JnFDHgb5/time-xxl.png");
+
+    }
 
     try {
         timeline_noti_channel.send(embed);
     } catch (e) {
-        console.log("[오류] 시간표 알림 메세지 전송에 실패했음!")
+        console.log("[오류] 시간표 알림 메세지 전송에 실패했음! e:"+ e);
     }
 }
 
@@ -275,7 +321,7 @@ module.exports = {
 
             TIMELINE_TIMETABLE.push(d.getHours()+":"+d.getMinutes());
         }
-
+        console.log("현재 TIMETABLE의 갯수: "+TIMELINE_TIMETABLE.length);
         d.setMinutes(d.getMinutes() + 45);
         TIMELINE_TIMETABLE.push(d.getHours()+":"+d.getMinutes()+"@finish");
 
@@ -286,7 +332,7 @@ module.exports = {
         if(debugMode) {
             var ddd = func.getKTC();
 
-            var debugTime = "14:"+(ddd.getMinutes()+0);
+            var debugTime = "16:"+(ddd.getMinutes()+0);
             console.log(debugTime);
             var _loop_index = 0;
             TIMELINE_TIMETABLE.forEach(ele => {
@@ -299,6 +345,14 @@ module.exports = {
 
                 _loop_index++;
             });
+
+            for(var i = 0; i < 3; i++) { // TODO <-- 디버깅 모드에서 시간표 제한 변경
+                if(TIMELINE_TIMETABLE[i].includes("@")) {
+                    TIMELINE_TIMETABLE[i] = "@"+(TIMELINE_TIMETABLE[i].split("@")[1]);
+                } else {
+                    TIMELINE_TIMETABLE[i] = "";
+                }
+            }
         }
 
         // 최종 TIMETABLE 배열 결과 출력
@@ -317,5 +371,6 @@ module.exports = {
             }
         });
         console.log("##########################");
+        console.log("TIMETABLE("+TIMELINE_TIMETABLE.length+"개): "+TIMELINE_TIMETABLE);
     }
 }
