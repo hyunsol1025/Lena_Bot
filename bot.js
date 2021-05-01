@@ -1,19 +1,20 @@
 require("./-Dev/env.js");
 
 const os = require("os");
+const fs = require('fs');
+
 const v = require("./Variables.js");
+const func = require("./Functions.js");
+const timelineManager = require("./TIMELINE/TimeLineManager.js");
+
+//
+// TODO -->  디스코드 변수를 Variables.js로 옮겼음! 그래서 작성할때 client가 아니라 v.client로 쓰면됨!  <--
+//
 
 // 봇을 호스트하는 컴퓨터가 호스팅 서비스가 아님을 인식 -> 봇이 점검중이거나 개발중임
 if(os.hostname().length < 20) {
     v.isNotHosting = true;
 }
-
-const func = require("./Functions.js");
-const timelineManager = require("./TIMELINE/TimeLineManager.js");
-
-const Discord = require('discord.js');
-const client = new Discord.Client();
-const fs = require('fs');
 
 //////////////////////////////////////////////////// - 대화 기능 관련
 frn = "레블아 ";
@@ -27,8 +28,9 @@ f = fs.readFileSync("./lists/say.txt", "utf-8");
 saymst = f.split("\n");
 
 //////////////////////////////////////////////////// - 시간표 기능 관련
-const timeline_noti_channel = client.channels.cache.get(process.env.timelineNotiChannel);
 var d = func.getKTC();
+
+d.setDate(2021, 4, 27); // TODO <-- 얘 없애기
 
 timelineManager._TIMELINE_TIMETABLE_SET(d.getDay(), 7, 45, 4);
 timelineManager._SET_TODAYTIMETABLE(d.getDay());
@@ -39,14 +41,15 @@ setInterval(_callTimeLineProcess, 2000);
 
 ////////////////////////////////////////////////////
 
-client.on('ready', () => {
+v.client.on('ready', () => {
     console.log("레나봇 온라인!");
 
     // 봇을 호스팅 서비스로 호스트하지 않을때 점검중임을 표시
-    if(v.isNotHosting) client.user.setActivity("점검!",{ type: 'PLAYING'});
+    if(v.isNotHosting) v.client.user.setActivity("점검!",{ type: 'PLAYING'});
+
 });
 
-client.on('message', message => {
+v.client.on('message', message => {
     namep = message.author.username;
     //console.log(namep);
 
@@ -66,7 +69,7 @@ client.on('message', message => {
             f = saymst[annom[ran]];
             ansur = f.split(";");
             if (ansur[2] !== "admin" && ansur[2] !== "adminD") {
-                const embed = new Discord.MessageEmbed()
+                const embed = new v.Discord.MessageEmbed()
                     .setTitle('')
                     .setDescription(ansur[2] + '님이 가르쳐 주셨어요!')
                     .setColor('0xEDD903')
@@ -127,8 +130,9 @@ client.on('message', message => {
         annom = [];
     }
 
+
     // 시간표 관련
 
 });
 
-client.login(process.env.TOKEN);
+v.client.login(process.env.TOKEN);

@@ -9,7 +9,7 @@ var v = require("../Variables.js");
 
 var TIMELINE_TIMENOTI_lEFTTIME = [ 0, 5, 10 ]; // 다음 수업을 알릴때, 해당 알림을 한 시점이 수업으로 부터 몇분 전 시각에 알림하는 가
 
-var _ANTI_NOTI = ""; // 알림 도배 방지
+var _ANTI_ACT = ""; // 특정 시각에 대한 프로세스 차단
 
 var TIMELINE_TIMETABLE = [];
 
@@ -27,10 +27,9 @@ var TIMELINE = {
 
 /////////////////////////
 
+// 시간에 따라 과목을 반환하는 메소드
 function getSubjectByTime(dayIndex, h, m) {
-    console.log("-----")
-    var _loop_index = 0;
-    var RESULT = null;
+    console.log("-----");
 
     for(var i = 0; i < TIMELINE_TIMETABLE.length; i++) {
         var ele = TIMELINE_TIMETABLE[i];
@@ -38,6 +37,9 @@ function getSubjectByTime(dayIndex, h, m) {
 
         for (var j = 0; j < TIMELINE_TIMENOTI_lEFTTIME.length; j++) {
             var _d2 = func.getKTC();
+
+            _d2.setDate(2021, 4, 27); // TODO <-- 얘 없애기
+
             var leftMin = TIMELINE_TIMENOTI_lEFTTIME[j];
 
             _d2.setHours(h);
@@ -59,6 +61,7 @@ function getSubjectByTime(dayIndex, h, m) {
 
                 } else {
                     console.log("i: "+i);
+                    console.log("현재 진행중: "+v.todayTimeline[i]);
                     return leftMin + "@" + v.todayTimeline[i];
                 }
 
@@ -68,11 +71,115 @@ function getSubjectByTime(dayIndex, h, m) {
 
     }
 
-    console.log("RESULT: "+RESULT);
-    return RESULT;
+    return false;
+}
+
+// 과목의 한글 이름을 반환하는 메소드
+function getSubjectKorName(subject) {
+    switch (subject) {
+        case "myTeacher": return "담임 선생님"
+        case "english": return "영어"
+        case "korea": return "국어"
+        case "social": return "사회"
+        case "science": return "과학"
+        case "pro1": return "프로그래밍"
+        case "pro2": return "프로그래밍"
+        case "html": return "응용 프로그래밍"
+        case "art": return "미술 & 컴퓨터 그래픽"
+        case "pe": return "체육"
+        case "music": return "음악"
+        case "dream": return "진로"
+        case "free": return "자율"
+        default: return null
+    }
+}
+
+function TIMELINE_NOTI(subject, leftMin) {
+    console.log("[TIMELINE_NOTI] subject: "+subject+" | leftMin: "+leftMin);
+    const timeline_noti_channel = v.client.channels.cache.get(process.env.timelineNotiChannel);
+
+    var classLink = (subject === "pro" ? getClassURL("pro1") : getClassURL(subject));
+    var _title = "여기를 눌러 "+getSubjectKorName(subject)+" 수업에 참여하자!";
+    var _des = "";
+
+    if(subject === "pro") {
+        _des += "**뒷 번호 프로그래밍 |** [여기를 클릭]("+getClassURL("pro2")+")\n\n"
+    }
+
+    _des += (leftMin == 0 ? "**지금 수업이 시작됨!**" : "수업까지 앞으로 **"+leftMin+"분 남음!**");
+
+    // 로그
+    console.log("\tclassLink -> "+classLink);
+
+    // 수업 이름 한글화
+    const embed = new v.Discord.MessageEmbed()
+        .setTitle(_title)
+        .setColor("#f5b042")
+        .setURL(classLink)
+        .setDescription(_des);
+
+    try {
+        timeline_noti_channel.send(embed);
+    } catch (e) {
+        console.log("[오류] 시간표 알림 메세지 전송에 실패했음!")
+    }
+}
+
+// 과목 링크를 반환하는 메소드
+function getClassURL(subject) {
+    switch(subject) {
+        case "free":
+            return process.env.free+"";
+
+        case "myTeacher":
+            return process.env.myTeacher+"";
+
+        case "english":
+            return process.env.english+"";
+
+        case "korea":
+            return process.env.korea+"";
+
+        case "social":
+            return process.env.social+"";
+
+        case "science":
+            return process.env.science+"";
+
+        case "pro1":
+            return process.env.pro1+"";
+
+        case "pro2":
+            return process.env.pro2+"";
+        case "html":
+            return process.env.html+"";
+
+        case "art":
+            return process.env.art+"";
+
+        case "pe":
+            return process.env.pe+"";
+
+        case "music":
+            return process.env.music+"";
+
+        case "dream":
+            return process.env.dream+"";
+
+        default:
+            return null;
+
+    }
 }
 
 module.exports = {
+
+    // 디버깅 출력
+    getDebug: function getDebug() {
+        console.log("\n[ TimeLineManager ] -----------\nTIMELINE_TIMENOTI_LEFTTIME: "+TIMELINE_TIMENOTI_lEFTTIME+"\n_ANTI_ACT: "+_ANTI_ACT+"\nTIMELINE_TIMETABLE: "+TIMELINE_TIMETABLE+"\n오늘의 시간표: "+v.todayTimeline);
+    },
+
+    // 오늘에 해당하는 시간표 배열을 설정하기
     _SET_TODAYTIMETABLE: function(dayIndex) {
         switch (dayIndex) {
             case 1:
@@ -99,20 +206,28 @@ module.exports = {
         console.log("todayTimeLine 설정 : "+v.todayTimeline);
     },
 
-    _TIMELINE_LOOP_PROCESS: function _TIMELINE_PROCESS() {
+    // 주기적으로 실행되는 메소드
+    _TIMELINE_LOOP_PROCESS: function _TIMELINE_LOOP_PROCESS() {
         var d = func.getKTC();
 
-        if((d.getDay() == 0 || d.getDay() == 6) || _ANTI_NOTI == d.getHours()+":"+d.getMinutes()) return;
+        d.setDate(2021, 4, 27); // TODO <-- 여기 없애야 함
+
+        if((d.getDay() == 0 || d.getDay() == 6) || _ANTI_ACT == d.getHours()+":"+d.getMinutes()) return;
 
         var subject = getSubjectByTime(d.getDay(), d.getHours(), d.getMinutes());
 
-        if(subject != null) {
-            _ANTI_NOTI = d.getHours()+":"+d.getMinutes();
+        if(subject !== false) {
 
-            console.log("다음수업("+subject.split("@")[1]+") 까지 "+subject.split("@")[0]+"분 남음!");
+            console.log("[과목발견] 다음수업("+subject.split("@")[1]+") 까지 "+subject.split("@")[0]+"분 남음!");
+            TIMELINE_NOTI(subject.split("@")[1],subject.split("@")[0]);
+
         } else {
+
             console.log("과목 정보가 없음!");
+
         }
+
+        _ANTI_ACT = d.getHours()+":"+d.getMinutes();
     },
 
     // 시간표의 시간 목록을 설정하는 메소드
@@ -161,7 +276,7 @@ module.exports = {
         if(debugMode) {
             var ddd = func.getKTC();
 
-            var debugTime = "23:"+(ddd.getMinutes()+0);
+            var debugTime = "14:"+(ddd.getMinutes()+0);
             console.log(debugTime);
             var _loop_index = 0;
             TIMELINE_TIMETABLE.forEach(ele => {
@@ -175,6 +290,8 @@ module.exports = {
                 _loop_index++;
             });
         }
+        TIMELINE_TIMETABLE[0] = "";
+        TIMELINE_TIMETABLE[1] = "";
 
         // 최종 TIMETABLE 배열 결과 출력
         var _class = 1;

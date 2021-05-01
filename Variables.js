@@ -1,4 +1,8 @@
+const d = require('discord.js');
+
 module.exports = {
     isNotHosting: false,
-    todayTimeline: []
+    todayTimeline: [],
+    Discord: d,
+    client: new d.Client()
 }
