@@ -30,10 +30,10 @@ saymst = f.split("\n");
 //////////////////////////////////////////////////// - 시간표 기능 관련
 var d = func.getKTC();
 
-d.setDate(2021, 4, 27); // TODO <-- 얘 없애기
+console.log(d.getDay());
 
 timelineManager._TIMELINE_TIMETABLE_SET(d.getDay(), 7, 45, 4);
-timelineManager._SET_TODAYTIMETABLE(d.getDay());
+timelineManager._SET_TODAYTIMETABLE(1); // TODO <-- 여기 d.getDay() 으로 바꿔야함!
 
 function _callTimeLineProcess() { timelineManager._TIMELINE_LOOP_PROCESS(); }
 

@@ -2,8 +2,10 @@
 // 시간표 관리자
 
 require("../-Dev/env.js");
-var func = require("../Functions.js");
-var v = require("../Variables.js");
+
+const wataten = require("./AboutWataten");
+const func = require("../Functions.js");
+const v = require("../Variables.js");
 
 /////////////////////////
 
@@ -38,8 +40,6 @@ function getSubjectByTime(dayIndex, h, m) {
         for (var j = 0; j < TIMELINE_TIMENOTI_lEFTTIME.length; j++) {
             var _d2 = func.getKTC();
 
-            _d2.setDate(2021, 4, 27); // TODO <-- 얘 없애기
-
             var leftMin = TIMELINE_TIMENOTI_lEFTTIME[j];
 
             _d2.setHours(h);
@@ -60,8 +60,6 @@ function getSubjectByTime(dayIndex, h, m) {
                     return leftMin + "@finish";
 
                 } else {
-                    console.log("i: "+i);
-                    console.log("현재 진행중: "+v.todayTimeline[i]);
                     return leftMin + "@" + v.todayTimeline[i];
                 }
 
@@ -82,8 +80,7 @@ function getSubjectKorName(subject) {
         case "korea": return "국어"
         case "social": return "사회"
         case "science": return "과학"
-        case "pro1": return "프로그래밍"
-        case "pro2": return "프로그래밍"
+        case "pro": return "프로그래밍"
         case "html": return "응용 프로그래밍"
         case "art": return "미술 & 컴퓨터 그래픽"
         case "pe": return "체육"
@@ -100,13 +97,20 @@ function TIMELINE_NOTI(subject, leftMin) {
 
     var classLink = (subject === "pro" ? getClassURL("pro1") : getClassURL(subject));
     var _title = "여기를 눌러 "+getSubjectKorName(subject)+" 수업에 참여하자!";
-    var _des = "";
+    var _des_leftTime = "";
+    var _des = "추가정보가 없음.";
 
+    // 추가 정보 설정
     if(subject === "pro") {
-        _des += "**뒷 번호 프로그래밍 |** [여기를 클릭]("+getClassURL("pro2")+")\n\n"
+        _des = "**[여기를 클릭]("+getClassURL("pro2")+")**하여 뒷 번호 프로그래밍에 참가할 수 있음.\n"
     }
 
-    _des += (leftMin == 0 ? "**지금 수업이 시작됨!**" : "수업까지 앞으로 **"+leftMin+"분 남음!**");
+    else if(subject == "music") {
+        _des = "**[여기를 클릭]("+getClassURL("music_ebs")+")**하여 음악 EBS에 접속할 수 있음.\n"
+    }
+
+    // 남은시간 설정
+    _des_leftTime += (leftMin == 0 ? "지금 수업이 시작됨!" : "수업까지 앞으로 **"+leftMin+"분 남음!**");
 
     // 로그
     console.log("\tclassLink -> "+classLink);
@@ -116,7 +120,11 @@ function TIMELINE_NOTI(subject, leftMin) {
         .setTitle(_title)
         .setColor("#f5b042")
         .setURL(classLink)
-        .setDescription(_des);
+        .setDescription("\n\u200b")
+        .setThumbnail(wataten.getRandomWataten())
+        .addField("💬 | 추가정보",_des)
+        .addField("⏱ | 남은시간",_des_leftTime);
+        //.setFooter(_des_leftTime,"https://i.postimg.cc/JnFDHgb5/time-xxl.png");
 
     try {
         timeline_noti_channel.send(embed);
@@ -163,6 +171,9 @@ function getClassURL(subject) {
         case "music":
             return process.env.music+"";
 
+        case "music_ebs":
+            return process.env.music_ebs+"";
+
         case "dream":
             return process.env.dream+"";
 
@@ -203,16 +214,15 @@ module.exports = {
                 break;
         }
 
-        console.log("todayTimeLine 설정 : "+v.todayTimeline);
+        console.log("todayTimeLine 설정(dayIndex:"+dayIndex+"): "+v.todayTimeline);
     },
 
     // 주기적으로 실행되는 메소드
     _TIMELINE_LOOP_PROCESS: function _TIMELINE_LOOP_PROCESS() {
         var d = func.getKTC();
 
-        d.setDate(2021, 4, 27); // TODO <-- 여기 없애야 함
-
-        if((d.getDay() == 0 || d.getDay() == 6) || _ANTI_ACT == d.getHours()+":"+d.getMinutes()) return;
+        if(_ANTI_ACT == d.getHours()+":"+d.getMinutes()) return; // <-- 이거는 테스트 전용 코드
+        // if((d.getDay() == 0 || d.getDay() == 6) || _ANTI_ACT == d.getHours()+":"+d.getMinutes()) return;
 
         var subject = getSubjectByTime(d.getDay(), d.getHours(), d.getMinutes());
 
@@ -290,8 +300,6 @@ module.exports = {
                 _loop_index++;
             });
         }
-        TIMELINE_TIMETABLE[0] = "";
-        TIMELINE_TIMETABLE[1] = "";
 
         // 최종 TIMETABLE 배열 결과 출력
         var _class = 1;
